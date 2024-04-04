@@ -3,6 +3,8 @@ import requests
 import json
 
 # define helper functions
+
+
 def plot_single_timeseries(train_data, predictions, test_data, item_id):
     plt.figure(figsize=(15, 3))
 
@@ -12,11 +14,13 @@ def plot_single_timeseries(train_data, predictions, test_data, item_id):
 
     colors = ['#FF6347', '#00FF7F', '#4169E1', '#FF69B4']
 
-    plt.plot(y_past[-100:], label="Past Time Series", color=colors[0], linestyle='-')
+    plt.plot(y_past[-100:], label="Past Time Series",
+             color=colors[0], linestyle='-')
     plt.plot(y_pred["mean"], label="Forecast", color=colors[1], linestyle='-')
     plt.plot(y_test, label="Observed", color=colors[2], linestyle='--')
 
-    plt.fill_between( y_pred.index, y_pred["0.1"], y_pred["0.9"], color=colors[3], alpha=0.2, label="10%-90% Confidence Interval")
+    plt.fill_between(y_pred.index, y_pred["0.1"], y_pred["0.9"],
+                     color=colors[3], alpha=0.2, label="10%-90% Confidence Interval")
 
     plt.legend()
     plt.xlabel("Time")
@@ -24,6 +28,7 @@ def plot_single_timeseries(train_data, predictions, test_data, item_id):
     plt.title(f"Predictions for Item {item_id}")
     plt.grid(True, linestyle='--', alpha=0.6)
     plt.show()
+
 
 def plot_multiple_timeseries(train_data, predictions, test_data, item_ids_to_plot):
 
@@ -37,11 +42,14 @@ def plot_multiple_timeseries(train_data, predictions, test_data, item_ids_to_plo
         y_pred = predictions.loc[item_id]
         y_test = test_data.loc[item_id]["target"][-24:]
 
-        plt.plot(y_past[-100:], label="Past Time Series", color=colors[0], linestyle='-')
-        plt.plot(y_pred["mean"], label="Forecast", color=colors[1], linestyle='-')
+        plt.plot(y_past[-100:], label="Past Time Series",
+                 color=colors[0], linestyle='-')
+        plt.plot(y_pred["mean"], label="Forecast",
+                 color=colors[1], linestyle='-')
         plt.plot(y_test, label="Observed", color=colors[2], linestyle='--')
 
-        plt.fill_between(y_pred.index, y_pred["0.1"], y_pred["0.9"], color=colors[3], alpha=0.2, label="10%-90% Confidence Interval")
+        plt.fill_between(y_pred.index, y_pred["0.1"], y_pred["0.9"],
+                         color=colors[3], alpha=0.2, label="10%-90% Confidence Interval")
 
         plt.legend()
         plt.xlabel("Time")
@@ -51,6 +59,7 @@ def plot_multiple_timeseries(train_data, predictions, test_data, item_ids_to_plo
 
     plt.tight_layout()
     plt.show()
+
 
 def get_single_timeseries_plot_base64(train_data, predictions, test_data, item_id):
     fig = plt.figure(figsize=(15, 3))
@@ -85,6 +94,7 @@ def get_single_timeseries_plot_base64(train_data, predictions, test_data, item_i
     plt.close()
     return image_base64
 
+
 def submit(name: str, predictor, train_data, test_data, known_covariates=None):
     print(f"Submitting {name} to the leaderboard...")
     model_info = predictor.info()['model_info'][predictor.model_best]
@@ -102,7 +112,7 @@ def submit(name: str, predictor, train_data, test_data, known_covariates=None):
     image_base64 = f"data:image/jpg;base64,{image_base64}"
 
     # score on test_data
-    score = predictor.evaluate(test_data)
+    test_score = predictor.evaluate(test_data)
 
     # submit data as post request
     url = 'https://gluonts-workshop.web.app/submissions'
@@ -111,7 +121,10 @@ def submit(name: str, predictor, train_data, test_data, known_covariates=None):
         "name": name,
         "model": model_info,
         "plot": image_base64,
-        "score": score
+        "score": test_score
     }
     response = requests.post(url, data=json.dumps(data), headers=headers)
-    print("Submitted successfully!")
+    if response.status_code != 200:
+        print(f"Failed to submit: {response.text}")
+    else:
+        print("Submitted successfully!")
