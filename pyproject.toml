@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "gluonts-workshop"
-version = "0.1.4"
+version = "0.1.5"
 description = ""
 authors = ["Surat Teerapittayanon <steerapi@gmail.com>"]
 readme = "README.md"
