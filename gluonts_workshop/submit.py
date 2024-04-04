@@ -100,7 +100,7 @@ def submit(name: str, predictor, train_data, test_data, known_covariates=None):
         train_data, predictions, test_data, 1)
 
     # submit data as post request
-    url = 'https://example.com/'
+    url = 'https://gluonts-workshop.web.app/submissions'
     headers = {'Content-type': 'application/json'}
     data = {
         "name": name,
