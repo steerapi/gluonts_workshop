@@ -88,7 +88,7 @@ def get_single_timeseries_plot_base64(train_data, predictions, test_data, item_i
 def submit(name: str, predictor, train_data, test_data, known_covariates=None):
     print(f"Submitting {name} to the leaderboard...")
     model_info = predictor.info()['model_info'][predictor.model_best]
-
+    del model_info['eval_metric']
     # generate predictions
     predictions = predictor.predict(
         train_data,
@@ -98,6 +98,11 @@ def submit(name: str, predictor, train_data, test_data, known_covariates=None):
     # plot time series
     image_base64 = get_single_timeseries_plot_base64(
         train_data, predictions, test_data, 1)
+    # convert to data_url
+    image_base64 = f"data:image/jpg;base64,{image_base64}"
+
+    # score on test_data
+    score = predictor.evaluate(test_data)
 
     # submit data as post request
     url = 'https://gluonts-workshop.web.app/submissions'
@@ -106,6 +111,7 @@ def submit(name: str, predictor, train_data, test_data, known_covariates=None):
         "name": name,
         "model": model_info,
         "plot": image_base64,
+        "score": score
     }
     response = requests.post(url, data=json.dumps(data), headers=headers)
     print("Submitted successfully!")
