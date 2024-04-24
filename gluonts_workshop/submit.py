@@ -117,6 +117,7 @@ def submit(name: str, predictor, train_data, test_data, known_covariates=None):
     # submit data as post request
     url = 'https://gluonts-workshop.web.app/submissions'
     headers = {'Content-type': 'application/json'}
+    del model_info['hyperparameters']
     data = {
         "name": name,
         "model": model_info,
